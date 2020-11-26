@@ -1,0 +1,80 @@
+<html>
+  <head>
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+    <script>
+      const address = "0xc8FA8ca5499Db2BEb039C891DB7E18BcC5277259";
+
+      const web3 = new Web3(Web3.givenProvider);
+
+      window.addEventListener("load", async () => {
+        if (typeof web3 === "undefined") {
+          alert("Metamask is not installed, you cannot use this app");
+        } else {
+          window.ethereum.enable();
+        }
+      });
+
+      const abi = [
+        {
+          inputs: [
+            { internalType: "uint256", name: "minimum", type: "uint256" },
+          ],
+          name: "createCampaign",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+          name: "deployedCampaigns",
+          outputs: [
+            { internalType: "contract Campaign", name: "", type: "address" },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "getDeployedCampaigns",
+          outputs: [
+            {
+              internalType: "contract Campaign[]",
+              name: "",
+              type: "address[]",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+      ];
+      var campaignFactory = new web3.eth.Contract(abi, address);
+      const createCampaign = async () => {
+        const accounts = await web3.eth.getAccounts();
+        const minimum = parseInt(document.getElementById("minimum").value);
+        await campaignFactory.methods.createCampaign(minimum).send({from:accounts[0]});
+        showDeployed();
+      };
+      const showDeployed = async () => {
+        const deployed = await campaignFactory.methods.getDeployedCampaigns().call();
+        document.getElementById("deployedCampaigns").innerHTML = deployed;
+      };
+    </script>
+  </head>
+  <body>
+    
+    <a href="campaign.html">Campaign</a>|
+    <a href="manager.html">Manager Page</a>|
+    <a href="contributer.html">Contributer Page</a>
+    <hr>
+    <h2>New Campaign</h2>
+    
+    <hr />
+    Minimum: <input type="text" id="minimum" />
+    <button type="button" onclick="createCampaign()">Enter</button>
+    <hr />
+    <h4>Deployed Campaign</h4>
+    <button type="button" onclick="showDeployed()">Show</button><br /><br />
+    <div id="deployedCampaigns"></div>
+    
+  </body>
+</html>

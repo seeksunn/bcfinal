@@ -1,0 +1,148 @@
+<html>
+  <head>
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+    <script>
+      const web3 = new Web3(Web3.givenProvider);
+
+      window.addEventListener("load", async () => {
+        if (typeof web3 === "undefined") {
+          alert("Metamask is not installed, you cannot use this app");
+        } else {
+          window.ethereum.enable();
+        }
+      });
+
+      const abi = [
+        {
+          inputs: [
+            { internalType: "uint256", name: "minimum", type: "uint256" },
+            { internalType: "address", name: "creator", type: "address" },
+          ],
+          stateMutability: "payable",
+          type: "constructor",
+        },
+        {
+          inputs: [{ internalType: "uint256", name: "index", type: "uint256" }],
+          name: "approveRequest",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [{ internalType: "address", name: "", type: "address" }],
+          name: "approvers",
+          outputs: [{ internalType: "bool", name: "", type: "bool" }],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "contribute",
+          outputs: [],
+          stateMutability: "payable",
+          type: "function",
+        },
+        {
+          inputs: [
+            { internalType: "string", name: "description", type: "string" },
+            { internalType: "uint256", name: "amount", type: "uint256" },
+            { internalType: "address", name: "recipient", type: "address" },
+          ],
+          name: "createRequest",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [{ internalType: "uint256", name: "index", type: "uint256" }],
+          name: "finalizeRequest",
+          outputs: [],
+          stateMutability: "payable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "manager",
+          outputs: [{ internalType: "address", name: "", type: "address" }],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "minimumContribution",
+          outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+          name: "requests",
+          outputs: [
+            { internalType: "string", name: "description", type: "string" },
+            { internalType: "uint256", name: "amount", type: "uint256" },
+            { internalType: "address", name: "recipient", type: "address" },
+            { internalType: "bool", name: "complete", type: "bool" },
+            { internalType: "uint256", name: "approvalCount", type: "uint256" },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+      ];
+      function test() {
+        alert("hi");
+      }
+      var campaign;      
+      const selectCampaign = async () => {
+        const address = document.getElementById("campaignHash").value;
+        campaign = new web3.eth.Contract(abi, address);
+        document.getElementById("request").style.display = "block";
+        const minimum = await campaign.methods.minimumContribution().call();
+        document.getElementById("requestConsole").innerHTML = 'Minimum balance for contribution: '+minimum;
+      };     
+      const showRequest = async () => {
+        const index = document.getElementById("index").value;
+        const request = await campaign.methods.requests(index).call();
+        document.getElementById("requestConsole").innerHTML = JSON.stringify(request);
+      };
+      const makeContri = async () => {
+        const accounts = await web3.eth.getAccounts();
+        const balance = document.getElementById("balance").value;
+        await campaign.methods.contribute().send({from:accounts[0],value:web3.utils.toWei(balance, "wei")})
+        document.getElementById("requestConsole").innerHTML = "Contributed";
+      }
+      const approveReq = async () => {
+        const accounts = await web3.eth.getAccounts();
+        const index = document.getElementById("apprIndex").value;
+        await campaign.methods.approveRequest(index).send({from:accounts[0]})
+        document.getElementById("requestConsole").innerHTML = "Approved";
+      }
+    </script>
+  </head>
+  <body>
+    <a href="campaign.html">Campaign</a>|
+    <a href="manager.html">Manager Page</a>|
+    <a href="contributer.html">Contributer Page</a>
+    <hr>
+    <h2>Choose Campaign</h2>
+    <hr />
+    Campaign Hash: <input type="text" id="campaignHash" />
+    <button type="button" onclick="selectCampaign()">Select</button>
+    <hr />
+    <div id="request" style="display: none">
+      <h4>Show Request</h4>
+      Index: <input type="text" id="index" />
+      <button type="button" onclick="showRequest()">Show</button>
+      <h4>Make a Contribution</h4>
+      Value: <input type="text" id="balance" />      
+      <button type="button" onclick="makeContri()">Confirm</button>
+      <h4>Make a Aproval</h4>  
+      Request Index: <input type="text" id="apprIndex" />
+      <button type="button" onclick="approveReq()">Approve</button>
+      <hr>
+    </div>
+    <div id="requestConsole"></div>
+    
+    
+
+  </body>
+</html>
